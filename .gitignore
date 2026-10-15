@@ -1,0 +1,11 @@
+/backend/vendor/
+/backend/var/
+/frontend/node_modules/
+/frontend/dist/
+/frontend/test-results/
+/frontend/playwright-report/
+.env
+*.docx
+/artifacts/
+
+/frontend/tsconfig.tsbuildinfo

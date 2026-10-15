@@ -1,0 +1,161 @@
+openapi: 3.0.3
+info:
+  title: Mini Notes API
+  version: 1.0.0
+  description: CRUD заметок. Даты в UTC. Все ошибки имеют единый JSON-формат.
+servers:
+  - url: /
+tags:
+  - name: Notes
+paths:
+  /api/notes:
+    get:
+      tags: [Notes]
+      summary: Получить заметки по дате изменения (сначала новые)
+      parameters:
+        - in: query
+          name: limit
+          schema: {type: integer, minimum: 1, maximum: 100, default: 100}
+        - in: query
+          name: offset
+          schema: {type: integer, minimum: 0, maximum: 1000000, default: 0}
+      responses:
+        '200':
+          description: Страница заметок
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [data, total, limit, offset]
+                properties:
+                  data: {type: array, items: {$ref: '#/components/schemas/Note'}}
+                  total: {type: integer}
+                  limit: {type: integer}
+                  offset: {type: integer}
+        '400': {$ref: '#/components/responses/BadRequest'}
+    post:
+      tags: [Notes]
+      summary: Создать заметку
+      requestBody: {$ref: '#/components/requestBodies/NoteInput'}
+      responses:
+        '201':
+          description: Заметка создана
+          headers:
+            Location: {schema: {type: string}, description: URL созданной заметки}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Note'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+  /api/notes/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: {type: string, format: uuid}
+        description: UUID v4
+    get:
+      tags: [Notes]
+      summary: Получить одну заметку
+      responses:
+        '200':
+          description: Заметка
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Note'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
+    put:
+      tags: [Notes]
+      summary: Заменить заголовок и текст заметки
+      requestBody: {$ref: '#/components/requestBodies/NoteInput'}
+      responses:
+        '200':
+          description: Заметка обновлена
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Note'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '415': {$ref: '#/components/responses/UnsupportedMediaType'}
+        '422': {$ref: '#/components/responses/ValidationError'}
+    delete:
+      tags: [Notes]
+      summary: Удалить заметку
+      responses:
+        '204': {description: Заметка удалена, тело ответа пустое}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /api/health:
+    get:
+      summary: Проверка API и подключения к БД
+      responses:
+        '200':
+          description: Сервис готов
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: {type: string, enum: [ok]}
+        '500':
+          description: База данных недоступна
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+components:
+  schemas:
+    NoteInput:
+      type: object
+      additionalProperties: false
+      required: [title, content]
+      properties:
+        title: {type: string, minLength: 1, maxLength: 200, description: Непустая строка; крайние пробелы удаляются}
+        content: {type: string, maxLength: 10000, description: Может быть пустой строкой; крайние пробелы удаляются}
+    Note:
+      type: object
+      required: [id, title, content, createdAt, updatedAt]
+      properties:
+        id: {type: string, format: uuid}
+        title: {type: string, minLength: 1, maxLength: 200}
+        content: {type: string, maxLength: 10000}
+        createdAt: {type: string, format: date-time}
+        updatedAt: {type: string, format: date-time}
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [status, message]
+          properties:
+            status: {type: integer}
+            message: {type: string}
+  requestBodies:
+    NoteInput:
+      required: true
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/NoteInput'}
+  responses:
+    BadRequest:
+      description: Некорректный JSON, UUID или параметры пагинации
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    NotFound:
+      description: Заметка не найдена
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    UnsupportedMediaType:
+      description: Требуется Content-Type application/json
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}
+    ValidationError:
+      description: Ошибка полей, типов, длины или неизвестные поля
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/Error'}

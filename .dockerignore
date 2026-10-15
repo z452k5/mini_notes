@@ -1,0 +1,8 @@
+**/node_modules
+**/vendor
+**/var
+**/dist
+.git
+.env
+*.docx
+artifacts

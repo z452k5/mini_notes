@@ -1,0 +1,41 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@theme inline {
+  --color-background: #fff; --color-foreground: #202622;
+  --color-primary: #354e39; --color-primary-foreground: #fff;
+  --color-secondary: #f1f3f0; --color-secondary-foreground: #202622;
+  --color-muted: #f1f3f0; --color-muted-foreground: #667168;
+  --color-accent: #edf1eb; --color-accent-foreground: #202622;
+  --color-destructive: #b33b3b; --color-destructive-foreground: #fff;
+  --color-border: #dee3dd; --color-input: #d4dbd3; --color-ring: #66846b;
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+}
+:root { font-family: system-ui, sans-serif; color: #202622; background: #f7f8f6; font-synthesis: none; }
+* { box-sizing: border-box; }
+button:not(:disabled) { cursor: pointer; }
+button:focus-visible { outline: 2px solid #66846b; outline-offset: 3px; }
+.page { max-width: 1080px; margin: 0 auto; padding: 36px 24px; }
+.page-header { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 24px; }
+h1 { font-size: 26px; font-weight: 650; }h1 span { font-size: 16px; font-weight: 400; color: #748073; margin-left: 8px; }
+h2 { font-size: 20px; font-weight: 600; margin-bottom: 22px; overflow-wrap: anywhere; }
+.columns { display: grid; grid-template-columns: minmax(0, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+.panel { border: 1px solid #dee3dd; border-radius: 8px; background: #fff; }
+.notes-list { padding: 8px; }.notes-list > .muted { padding: 12px; }
+.note-row { width: 100%; display: flex; flex-direction: column; text-align: left; gap: 7px; padding: 15px 12px; border-radius: 5px; }.note-row:hover { background: #f4f6f2; }.note-row.selected { background: #edf1e9; }.note-row strong { font-size: 14px; font-weight: 600; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }.preview { font-size: 13px; color: #6f796d; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; width: 100%; }.note-row time { color: #899185; font-size: 11px; }.notes-list li + li { border-top: 1px solid #eef0eb; }
+.detail { padding: 24px; }.detail label { display: block; font-size: 13px; font-weight: 500; margin: 18px 0 8px; }.detail textarea { resize: vertical; min-height: 180px; }.field-hint { font-size: 11px; color: #7d8778; margin-top: 6px; }.muted { font-size: 13px; color: #7a8475; line-height: 1.7; }.note-content { font-size: 14px; line-height: 1.8; white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 22px; }.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; }.load-more { width: calc(100% - 16px); margin: 8px; }.error { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid #e8c3bd; background: #fff2ef; color: #a13e32; border-radius: 6px; padding: 12px; margin-bottom: 18px; font-size: 13px; }.status { color: #42623e; font-size: 13px; margin-bottom: 18px; }
+@media(max-width:640px) { .page { padding: 24px 16px; }.columns { grid-template-columns: minmax(0,1fr); gap: 16px; }.detail { padding: 20px; }h1 { font-size: 23px; }.error { flex-wrap: wrap; } }
+
+.editor-form { display: grid; gap: 20px; }.field { display: grid; gap: 8px; }.field label { font-size: 13px; font-weight: 500; }.field .field-hint { margin: 0; }.field textarea { resize: vertical; min-height: 160px; max-height: 40vh; }.form-error { font-size: 13px; color: #a13e32; }
+@media(prefers-reduced-motion:reduce) { [data-state] { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
+
+.editor-form h2 { margin: 0; }.editor-form .field label { margin: 0; }.form-actions { margin: 0; justify-content: flex-end; }
+
+.modal-overlay[data-state="open"] { animation: overlay-in 160ms ease-out; }
+.modal-overlay[data-state="closed"] { animation: overlay-out 120ms ease-in; }
+.modal-content[data-state="open"] { animation: modal-in 160ms ease-out; }
+.modal-content[data-state="closed"] { animation: modal-out 120ms ease-in; }
+@keyframes overlay-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes overlay-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes modal-in { from { opacity: 0; scale: .96; } to { opacity: 1; scale: 1; } }
+@keyframes modal-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .96; } }
+.modal-content { overflow-wrap: anywhere; }.modal-content > * { min-width: 0; }

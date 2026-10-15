@@ -1,0 +1,12 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+    App\:
+        resource: '../src/'
+        exclude: '../src/{Kernel.php,Notes/Domain/}'
+    Doctrine\DBAL\Connection:
+        factory: ['App\Shared\Infrastructure\ConnectionFactory', 'create']
+        arguments:
+            - '%env(DATABASE_URL)%'
+    App\Notes\Domain\NoteRepository: '@App\Notes\Infrastructure\MysqlNoteRepository'
