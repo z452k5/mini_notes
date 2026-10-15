@@ -21,6 +21,8 @@ final class ExceptionSubscriber implements EventSubscriberInterface
         if ($status >= 500) { error_log($error::class.': '.$error->getMessage()); }
         $message = $status >= 500 ? 'Сервис временно недоступен.' : $error->getMessage();
         $headers = $error instanceof HttpExceptionInterface ? $error->getHeaders() : [];
-        $event->setResponse(new JsonResponse(['error'=>['status'=>$status, 'message'=>$message]], $status, $headers));
+        $body = ['status'=>$status, 'message'=>$message];
+        if ($error instanceof ValidationException) { $body['fields'] = $error->fields; }
+        $event->setResponse(new JsonResponse(['error'=>$body], $status, $headers));
     }
 }

@@ -25,11 +25,20 @@ final class NoteTest extends TestCase
     { $this->expectException(\DomainException::class); Note::create('   ', ''); }
     public function testUnicodeLimitUsesCharacters(): void
     {
-        self::assertSame(str_repeat('я', 200), Note::create(str_repeat('я', 200), '')->toArray()['title']);
-        $this->expectException(\DomainException::class); Note::create(str_repeat('я', 201), '');
+        self::assertSame(str_repeat('я', 50), Note::create(str_repeat('я', 50), '')->toArray()['title']);
+        $this->expectException(\DomainException::class); Note::create(str_repeat('я', 51), '');
     }
     public function testRejectsLongContent(): void
-    { $this->expectException(\DomainException::class); Note::create('Название', str_repeat('я', 10001)); }
+    { $this->expectException(\DomainException::class); Note::create('Название', str_repeat('я', 201)); }
+    public function testAcceptsExactContentLimitWithUnicode(): void
+    { self::assertSame(str_repeat('📝', 200), Note::create('Заметка', str_repeat('📝', 200))->toArray()['content']); }
+    public function testRestoresHistoricalNoteButRejectsSavingOverNewLimits(): void
+    {
+        $note = Note::restore('00000000-0000-4000-8000-000000000000', str_repeat('я', 100), str_repeat('я', 300), new \DateTimeImmutable(), new \DateTimeImmutable());
+        self::assertSame(str_repeat('я', 100), $note->toArray()['title']);
+        $this->expectException(\DomainException::class);
+        $note->update(str_repeat('я', 100), str_repeat('я', 300));
+    }
     public function testInvalidUpdateLeavesStateUnchanged(): void
     {
         $note = Note::create('До', 'Текст'); $before = $note->toArray();

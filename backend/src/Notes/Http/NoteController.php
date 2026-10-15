@@ -2,8 +2,10 @@
 declare(strict_types=1);
 namespace App\Notes\Http;
 use App\Notes\Application\NoteService;
+use App\Notes\Domain\Note;
+use App\Shared\Http\ValidationException;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
-use Symfony\Component\HttpKernel\Exception\{BadRequestHttpException, UnprocessableEntityHttpException, UnsupportedMediaTypeHttpException};
+use Symfony\Component\HttpKernel\Exception\{BadRequestHttpException, UnsupportedMediaTypeHttpException};
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -62,14 +64,14 @@ final readonly class NoteController
         catch (\JsonException) { throw new BadRequestHttpException('Некорректный JSON.'); }
         if (!$object instanceof \stdClass) { throw new BadRequestHttpException('Тело запроса должно быть JSON-объектом.'); }
         $data = (array)$object;
-        $errors = $this->validator->validate($data, new Assert\Collection([
-            'title'=>new Assert\Sequentially([new Assert\Type('string'), new Assert\NotBlank(normalizer: 'trim'), new Assert\Length(max: 200)]),
-            'content'=>[new Assert\Type('string'), new Assert\NotNull(), new Assert\Length(max: 10000)],
-        ]));
+        $errors = $this->validator->validate($data, new Assert\Collection(fields: [
+            'title'=>new Assert\Sequentially([new Assert\Type('string', message: 'Заголовок должен быть строкой.'), new Assert\NotBlank(message: 'Введите заголовок.', normalizer: 'trim'), new Assert\Length(max: Note::TITLE_MAX_LENGTH, maxMessage: 'Заголовок должен содержать не более {{ limit }} символов.')]),
+            'content'=>new Assert\Sequentially([new Assert\Type('string', message: 'Текст должен быть строкой.'), new Assert\NotNull(message: 'Текст должен быть строкой.'), new Assert\Length(max: Note::CONTENT_MAX_LENGTH, maxMessage: 'Текст должен содержать не более {{ limit }} символов.')]),
+        ], missingFieldsMessage: 'Обязательное поле отсутствует.', extraFieldsMessage: 'Неизвестное поле.'));
         if (count($errors)) {
-            $messages = [];
-            foreach ($errors as $error) { $messages[] = $error->getPropertyPath().': '.$error->getMessage(); }
-            throw new UnprocessableEntityHttpException(implode(' ', $messages));
+            $fields = [];
+            foreach ($errors as $error) { $fields[trim($error->getPropertyPath(), '[]')][] = $error->getMessage(); }
+            throw new ValidationException($fields);
         }
         return $data;
     }

@@ -24,5 +24,5 @@ final readonly class MysqlNoteRepository implements NoteRepository
     public function delete(Note $note): void { $this->db->delete('notes', ['id'=>$note->id]); }
     private function date(string $date): string { return (new \DateTimeImmutable($date))->format('Y-m-d H:i:s.u'); }
     private function hydrate(array $row): Note
-    { return new Note($row['id'], $row['title'], $row['content'], new \DateTimeImmutable($row['created_at'], new \DateTimeZone('UTC')), new \DateTimeImmutable($row['updated_at'], new \DateTimeZone('UTC'))); }
+    { return Note::restore($row['id'], $row['title'], $row['content'], new \DateTimeImmutable($row['created_at'], new \DateTimeZone('UTC')), new \DateTimeImmutable($row['updated_at'], new \DateTimeZone('UTC'))); }
 }

@@ -1,8 +1,12 @@
 export interface Note { id: string; title: string; content: string; createdAt: string; updatedAt: string }
 export interface NotePage { data: Note[]; total: number; limit: number; offset: number }
+export type FieldErrors = Record<string, string[]>;
+export class ApiError extends Error {
+ constructor(message: string, public readonly fields: FieldErrors = {}) { super(message); }
+}
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
  const response = await fetch(`/api${path}`, { ...options, headers: { 'Content-Type': 'application/json', ...options?.headers } });
- if (!response.ok) { const data = await response.json().catch(() => null); throw new Error(data?.error?.message ?? 'Не удалось выполнить запрос. Попробуйте ещё раз.'); }
+ if (!response.ok) { const data = await response.json().catch(() => null); throw new ApiError(data?.error?.message ?? 'Не удалось выполнить запрос. Попробуйте ещё раз.', data?.error?.fields ?? {}); }
  if (response.status === 204) return undefined as T;
  return response.json();
 }

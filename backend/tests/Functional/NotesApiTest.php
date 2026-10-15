@@ -25,11 +25,31 @@ final class NotesApiTest extends WebTestCase
             self::assertSame('Обновлена', $updated['title']); self::assertSame('', $updated['content']);
             self::assertSame($created['createdAt'], $updated['createdAt']);
             $client->jsonRequest('PUT', $url, ['title'=>' ', 'content'=>'']); self::assertResponseStatusCodeSame(422);
+            $client->jsonRequest('PUT', $url, ['title'=>str_repeat('я',51), 'content'=>str_repeat('📝',201)]);
+            self::assertResponseStatusCodeSame(422);
+            $fields = json_decode($client->getResponse()->getContent(), true)['error']['fields'];
+            self::assertSame(['Заголовок должен содержать не более 50 символов.'], $fields['title']);
+            self::assertSame(['Текст должен содержать не более 200 символов.'], $fields['content']);
             $client->request('GET', $url); self::assertSame('Обновлена', json_decode($client->getResponse()->getContent(), true)['title']);
         } finally { $client->request('DELETE', $url); }
         self::assertResponseStatusCodeSame(204); self::assertSame('', $client->getResponse()->getContent());
         $client->request('GET', $url); self::assertResponseStatusCodeSame(404);
         $client->request('DELETE', $url); self::assertResponseStatusCodeSame(404);
+    }
+    public function testAcceptsExactLimitsAndReturnsFieldErrorsOnOverflow(): void
+    {
+        $client = self::createClient();
+        $client->jsonRequest('POST', '/api/notes', ['title'=>str_repeat('я',50), 'content'=>str_repeat('📝',200)]);
+        self::assertResponseStatusCodeSame(201);
+        $note = json_decode($client->getResponse()->getContent(), true);
+        try {
+            self::assertSame(str_repeat('я',50), $note['title']);
+            self::assertSame(str_repeat('📝',200), $note['content']);
+            $client->jsonRequest('POST', '/api/notes', ['title'=>str_repeat('я',51), 'content'=>str_repeat('📝',201)]);
+            self::assertResponseStatusCodeSame(422);
+            $fields = json_decode($client->getResponse()->getContent(), true)['error']['fields'];
+            self::assertArrayHasKey('title', $fields); self::assertArrayHasKey('content', $fields);
+        } finally { $client->request('DELETE', '/api/notes/'.$note['id']); }
     }
     #[DataProvider('invalidRequests')]
     public function testValidation(string $method, string $url, string $body, string $contentType, int $status): void
@@ -52,8 +72,8 @@ final class NotesApiTest extends WebTestCase
         yield 'numeric title' => ['POST','/api/notes','{"title":10,"content":""}','application/json',422];
         yield 'null content' => ['POST','/api/notes','{"title":"t","content":null}','application/json',422];
         yield 'extra field' => ['POST','/api/notes','{"title":"t","content":"","admin":true}','application/json',422];
-        yield 'long title' => ['POST','/api/notes',json_encode(['title'=>str_repeat('я',201),'content'=>'']),'application/json',422];
-        yield 'long body' => ['POST','/api/notes',json_encode(['title'=>'t','content'=>str_repeat('я',10001)]),'application/json',422];
+        yield 'long title' => ['POST','/api/notes',json_encode(['title'=>str_repeat('я',51),'content'=>'']),'application/json',422];
+        yield 'long body' => ['POST','/api/notes',json_encode(['title'=>'t','content'=>str_repeat('я',201)]),'application/json',422];
         yield 'invalid limit' => ['GET','/api/notes?limit=0','','application/json',400];
         yield 'negative offset' => ['GET','/api/notes?offset=-1','','application/json',400];
         yield 'array offset' => ['GET','/api/notes?offset[]=0','','application/json',400];
