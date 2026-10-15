@@ -16,16 +16,17 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  function changeDraft(field: 'title' | 'content', value: string) {
-    setDraft(previous => previous && { ...previous, [field]: value });
-    setFieldErrors(previous => { const next = { ...previous }; delete next[field]; return next; });
-    setError('');
-  }
   const [status, setStatus] = useState('');
   const [selected, setSelected] = useState<Note | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [pendingDelete, setPendingDelete] = useState<Note | null>(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
+
+  function changeDraft(field: 'title' | 'content', value: string) {
+    setDraft(previous => previous && { ...previous, [field]: value });
+    setFieldErrors(previous => { const next = { ...previous }; delete next[field]; return next; });
+    setError('');
+  }
 
   async function load() {
     setLoading(true); setError('');
