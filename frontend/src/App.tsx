@@ -82,7 +82,10 @@ export default function App() {
   return <main className="page">
     <header className="page-header">
       <h1>Заметки <span>{total}</span></h1>
-      <Button disabled={busy || loading} onClick={create}>Новая заметка</Button>
+      <div className="header-actions">
+        <Button variant="outline" asChild><a href="/docs/" target="_blank" rel="noreferrer">Swagger API</a></Button>
+        <Button disabled={busy || loading} onClick={create}>Новая заметка</Button>
+      </div>
     </header>
     {error && !draft && <div className="error" role="alert">{error} <Button variant="outline" size="sm" disabled={busy || loading} onClick={() => void load()}>Обновить список</Button></div>}
     {status && <p className="status" role="status">{status}</p>}

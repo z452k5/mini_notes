@@ -41,3 +41,6 @@ h2 { font-size: 20px; font-weight: 600; margin-bottom: 22px; overflow-wrap: anyw
 .modal-content { overflow-wrap: anywhere; }.modal-content > * { min-width: 0; }
 
 .field-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }.counter { font-size: 12px; color: #748073; white-space: nowrap; }.over-limit, .field-error { color: #b33b3b; }.field-error { font-size: 12px; margin: 0; }[aria-invalid="true"] { border-color: #b33b3b; }.field textarea { min-height: 120px; }
+
+.header-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+@media(max-width:480px) { .page-header { flex-wrap: wrap; }.header-actions { justify-content: flex-start; } }
